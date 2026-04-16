@@ -20,6 +20,7 @@ class CreateUsersTable extends Migration
             $table->enum('role', ['customer','resepsionis','admin'])->default('customer');
             $table->string('phone');
             $table->string('password');
+            $table->rememberToken();
             $table->timestamps();
         });
     }
