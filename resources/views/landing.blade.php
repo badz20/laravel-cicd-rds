@@ -6,7 +6,7 @@
             	<div class="overlay bg-parallax" data-stellar-ratio="0.9" data-stellar-vertical-offset="0" data-background=""></div>
 				<div class="container">
 					<div class="banner_content text-center">
-						<h6>Away from monotonous life</h6>
+						<h6>Away from monotonous lifezzz</h6>
 						<h2>Hotel Hebat</h2>
 						<p>Hotel bersih, aman, nyaman, sehat<br> Harga yang terjangkau anda dapat menginap disini</p>
 						<a href="#types" class="btn theme_btn button_hover">Get Started</a>
