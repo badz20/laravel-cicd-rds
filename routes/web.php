@@ -82,3 +82,12 @@ Route::group(['middleware' => 'prevent'], function(){
 
     });
 });
+
+// Add this health check route
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'healthy',
+        'time' => now()->toDateTimeString(),
+        'server' => gethostname()
+    ]);
+});
