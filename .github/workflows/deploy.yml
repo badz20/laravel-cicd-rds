@@ -1,30 +1,36 @@
-- name: Deploy to EC2
-  run: |
-    ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
-      cd /var/www/laravel-cicd-rds
+name: Deploy Laravel to EC2
 
-      # Discard local changes before pull (ADD THIS)
-      sudo git reset --hard HEAD
-      sudo git clean -fd
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Allows manual trigger
 
-      # Now pull latest code
-      sudo git pull origin main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      # Install dependencies
-      composer install --no-dev --optimize-autoloader
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.EC2_HOST }} ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDXmuxXx1QCmSWYYUJAAtvPfzdGG5ACUePy+sZbTltZz github-actions" >> ~/.ssh/known_hosts
 
-      # Fix permissions
-      sudo chown -R www-data:www-data storage bootstrap/cache
-      sudo chmod -R 775 storage bootstrap/cache
-
-      # Clear and rebuild caches
-      php artisan optimize:clear
-      php artisan config:cache
-      php artisan route:cache
-      php artisan view:cache
-
-      # Restart PHP
-      sudo systemctl restart php8.4-fpm
-
-      echo "✅ Deployment completed at $(date)"
-    EOF
+      - name: Deploy to EC2
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
+            cd /var/www/laravel-cicd-rds
+            sudo git pull origin main
+            composer install --no-dev --optimize-autoloader
+            sudo chown -R www-data:www-data storage bootstrap/cache
+            sudo chmod -R 775 storage bootstrap/cache
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            sudo systemctl reload php8.4-fpm
+            echo "Deployment completed at $(date)"
+          EOF
